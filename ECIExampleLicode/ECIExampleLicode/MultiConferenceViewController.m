@@ -14,13 +14,14 @@
 #import "Nuve.h"
 #import "ErizoClient.h"
 
-static NSString *roomId = @"59de889a35189661b58017a1";
+static NSString *roomId = @"5e4b7d08cab4205848059aef";
 static NSString *roomName = @"IOS Demo APP";
 static NSString *kDefaultUserName = @"ErizoIOS";
 
 // Remote video view size
 static CGFloat vWidth = 100.0;
 static CGFloat vHeight = 120.0;
+static bool isPublished = false;
 
 @interface MultiConferenceViewController () <UITextFieldDelegate, RTCEAGLVideoViewDelegate>
 @end
@@ -77,6 +78,7 @@ static CGFloat vHeight = 120.0;
 # pragma mark - ECRoomDelegate
 
 - (void)room:(ECRoom *)room didError:(ECRoomErrorStatus)status reason:(NSString *)reason {
+	isPublished = false;
 	[self showCallConnectViews:YES
            updateStatusMessage:[NSString stringWithFormat:@"Room error: %@", reason]];
 }
@@ -102,6 +104,7 @@ static CGFloat vHeight = 120.0;
 }
 
 - (void)room:(ECRoom *)room didPublishStream:(ECStream *)stream {
+	isPublished = true;
     [self.unpublishButton setTitle:@"UnPublish" forState:UIControlStateNormal];
 	[self showCallConnectViews:NO
            updateStatusMessage:[NSString stringWithFormat:@"Published with ID: %@", stream.streamId]];
@@ -152,7 +155,20 @@ static CGFloat vHeight = 120.0;
 - (void)room:(ECRoom *)room didChangeStatus:(ECRoomStatus)status {
     switch (status) {
         case ECRoomStatusDisconnected:
+            isPublished = false;
             [self showCallConnectViews:YES updateStatusMessage:@"Room Disconnected"];
+            break;
+        case ECRoomStatusIceFailed:
+            if(!isPublished) {
+                @try {
+                    [remoteRoom unpublish];
+                    [self leave:nil];
+                } @catch(NSException* exception) {
+                } @finally {
+                    [NSThread sleepForTimeInterval:2];
+                    localStream = nil;
+                }
+            }
             break;
         default:
             break;
@@ -187,7 +203,16 @@ static CGFloat vHeight = 120.0;
     // Initialize room (without token!)
     remoteRoom = [[ECRoom alloc] initWithDelegate:self
                                    andPeerFactory:[[RTCPeerConnectionFactory alloc] init]];
-
+    
+    [[LicodeServer sharedInstance] obtainHypeToken:roomId
+                                        completion:^(BOOL result, NSString *token) {
+                                            if(result) {
+                                                //Connect with the Room
+                                                [remoteRoom connectWithEncodedToken:token];
+                                            } else {
+                                                //[self showCallConnectViews:YES updateStatusMessage:@"Token fetch failed"];
+                                            }
+                                        }];
     /*
 
     Method 1: Chotis example:
@@ -236,7 +261,7 @@ static CGFloat vHeight = 120.0;
 
 
     Method 2.2: Create a token for a given room id.
-    */
+    
     [[Nuve sharedInstance] createTokenForRoomId:roomId
                                        username:username
                                            role:kLicodePresenterRole
@@ -248,7 +273,7 @@ static CGFloat vHeight = 120.0;
                                                     updateStatusMessage:@"Error!"];
                                          }
                                      }];
-    /*
+    
     Method 2.3: Create a Room and then create a Token.
 
     [[Nuve sharedInstance] createRoomAndCreateToken:roomName

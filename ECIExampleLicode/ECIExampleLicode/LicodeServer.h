@@ -14,5 +14,7 @@
 
 - (void)obtainMultiVideoConferenceToken:(NSString *)username
                              completion:(void(^)(BOOL result, NSString *token))completion;
+							 
+- (void)obtainHypeToken:(NSString *)roomNumber completion:(void (^)(BOOL, NSString *))completion;
 
 @end

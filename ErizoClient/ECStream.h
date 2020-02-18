@@ -243,4 +243,6 @@ static NSString * _Nonnull const kStreamOptionMuteStream    = @"muteStream";
 /// Default audio contraints.
 @property (readonly) RTCMediaConstraints * _Nullable defaultAudioConstraints;
 
+@property (strong, nonatomic) RTCPeerConnection * _Nullable peerConnection;
+
 @end

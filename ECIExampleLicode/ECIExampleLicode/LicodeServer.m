@@ -29,6 +29,45 @@ static NSString *kLicodeServerTokenJSONField = @"";
     return sharedInstance;
 }
 
+- (void)obtainHypeToken:(NSString *)roomNumber completion:(void (^)(BOOL, NSString *))completion {
+    if(roomNumber == nil || roomNumber.length == 0) {
+        return;
+    }
+	
+    NSString *requestUrl = [NSString stringWithFormat:@"https://test1.onescreensolutions.com/api/v1/rooms/%@?userName=user&userRole=presenter",roomNumber];
+    NSMutableURLRequest *request = [self buildRequest:requestUrl method:@"GET" postData:nil];
+    NSURL* url = [NSURL URLWithString:requestUrl];
+    [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:[url host]];
+	
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue]
+                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+                               if(!connectionError) {
+                                   NSError *jsonParseError = nil;
+                                   id object = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonParseError];
+                                   if(!jsonParseError) {
+                                       L_INFO(@"JSON parsed: %@", object);
+                                       if([object isKindOfClass:[NSDictionary class]]) {
+                                           object = [object objectForKey:@"data"];
+                                           if(object && [object isKindOfClass:[NSDictionary class]]) {
+                                               NSString *token = [object objectForKey:@"token"];
+                                               completion(TRUE, token);
+										   } else {
+											   completion(FALSE, nil);
+										   }
+									   } else {
+										   completion(FALSE, nil);
+									   }
+                                   } else {
+                                       L_ERROR(@"Error parsing JSON data %@", data);
+                                       completion(FALSE, nil);
+                                   }
+                               } else {
+                                   completion(FALSE, nil);
+                               }
+                           }];
+}
+
+
 - (void)obtainMultiVideoConferenceToken:(NSString *)username completion:(void (^)(BOOL, NSString *))completion {
 	NSDictionary *postData = @{
 							   @"mediaConfiguration": @"default",

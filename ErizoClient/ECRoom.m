@@ -368,6 +368,8 @@ static NSString * const kRTCStatsMediaTypeKey    = @"mediaType";
         if (state == ECClientStateDisconnected) {
             [publishingStatsTimer invalidate];
             self.status = ECRoomStatusDisconnected;
+        } else if (state == ECClientStateIceFailed) {
+            self.status = ECRoomStatusIceFailed;
         } else if (state == ECClientStateConnected) {
             publishingStatsTimer = [NSTimer scheduledTimerWithTimeInterval:2.0
                                                                     target:self
@@ -396,6 +398,7 @@ static NSString * const kRTCStatsMediaTypeKey    = @"mediaType";
         stream.peerFactory = _peerFactory;
         stream.mediaStream = remoteStream;
         stream.signalingChannel = _signalingChannel;
+        stream.peerConnection = client.peerConnection;
         [_delegate room:self didSubscribeStream:stream];
     }
 }

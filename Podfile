@@ -1,6 +1,7 @@
 source 'https://github.com/CocoaPods/Specs.git'
 use_frameworks!
 
+ENV['SWIFT_VERSION'] = '4.2'
 platform :ios, :deployment_target => '8.0'
 
 workspace './ErizoClientIOS.xcworkspace'

@@ -92,6 +92,7 @@ extern NSString* clientStateToString(ECClientState state);
 ///-----------------------------------
 
 - (void)disconnect;
+- (void)iceFailed;
 
 ///-----------------------------------
 /// @name Class Methods

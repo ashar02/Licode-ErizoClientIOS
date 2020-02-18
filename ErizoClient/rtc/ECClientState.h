@@ -12,6 +12,8 @@
 typedef NS_ENUM(NSInteger, ECClientState) {
     /// Disconnected
     ECClientStateDisconnected,
+    /// IceFailed
+    ECClientStateIceFailed,
     /// Ready to signaling
     ECClientStateReady,
     /// Signaling proccess

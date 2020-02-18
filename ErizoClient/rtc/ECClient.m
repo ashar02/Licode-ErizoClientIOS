@@ -123,6 +123,20 @@
     [self setState:ECClientStateDisconnected];
 }
 
+- (void)iceFailed {
+    if (state == ECClientStateDisconnected) {
+        return;
+    }
+    
+    //[_peerConnection close];
+    
+    //_isInitiator = NO;
+    //_hasReceivedSdp = NO;
+    //_messageQueue = [NSMutableArray array];
+    
+    [self setState:ECClientStateIceFailed];
+}
+
 #
 # pragma mark - Constraints
 #
@@ -261,11 +275,14 @@ readyToSubscribeStreamId:(NSString *)streamId
             }
             case RTCIceConnectionStateFailed: {
                 L_WARNING(@"RTCIceConnectionStateFailed %@", peerConnection);
+                [self iceFailed];
                 break;
             }
-            case RTCIceConnectionStateClosed:
-            case RTCIceConnectionStateDisconnected: {
+            case RTCIceConnectionStateClosed:{
                 [self disconnect];
+                break;
+            }
+            case RTCIceConnectionStateDisconnected: {
                 break;
             }
             default:
@@ -584,6 +601,9 @@ NSString * clientStateToString(ECClientState state) {
     switch(state) {
         case ECClientStateDisconnected:
             result = @"ECClientStateDisconnected";
+            break;
+        case ECClientStateIceFailed:
+            result = @"ECClientStateIceFailed";
             break;
         case ECClientStateReady:
             result = @"ECClientStateReady";

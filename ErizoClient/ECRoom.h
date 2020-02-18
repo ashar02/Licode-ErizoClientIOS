@@ -23,7 +23,8 @@ typedef NS_ENUM(NSInteger, ECRoomStatus) {
     ECRoomStatusReady,
     ECRoomStatusConnected,
     ECRoomStatusDisconnected,
-    ECRoomStatusError
+    ECRoomStatusError,
+    ECRoomStatusIceFailed
 };
 
 /**
